@@ -1,23 +1,47 @@
-import logo from './logo.svg';
+import { useState } from "react";
+import books from "./books.json";
+import Card from "./components/Card";
+import SearchBar from "./components/SearchBar";
+import Fuse from "fuse.js";
+
 import './App.css';
 
 function App() {
+  const [data, setData] = useState(books)
+
+  const searchData = (pattern) => {
+    if(!pattern) {
+      setData(books)
+      return
+    }
+
+    const fuse = new Fuse(data, {
+      keys: ['title', 'author']
+    })
+
+    const result = fuse.search(pattern)
+    const matches = [];
+
+    if(!result.length) {
+      setData([])
+    } else {
+      result.forEach(({item}) => {
+        matches.push(item)
+      })
+      setData(matches)
+    }
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="Container">
+      <h1 className="Title">My Favorite books</h1>
+      <SearchBar
+        placeholder="Search"
+        onChange={(e) => searchData(e.target.value)}
+       />
+      {
+        data.map(item => <Card key={item.name} {...item}/>)
+      }
     </div>
   );
 }
